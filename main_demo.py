@@ -1,13 +1,13 @@
 import sys
 from os.path import join
-
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split
-from util.img_util import readImageFile, saveImageFile
-from util.inpaint_util import removeHair
+# Aquí eliminamos las importaciones no necesarias si no usamos funciones de inpainting.
+# from util.img_util import readImageFile, saveImageFile
+# from util.inpaint_util import removeHair
 
 
 def main(csv_path, save_path):
@@ -34,7 +34,7 @@ def main(csv_path, save_path):
     print("Confusion Matrix:\n", cm)
 
     # write test results to CSV.
-    result_df = data.loc[X_test.index, ["filename"]].copy()
+    result_df = data_df.loc[x_test.index, ["filename"]].copy()  # Corrected from 'data' to 'data_df'
     result_df['true_label'] = y_test.values
     result_df['predicted_label'] = y_pred
     result_df.to_csv(save_path, index=False)
