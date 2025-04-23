@@ -2,7 +2,6 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import cv2
-import numpy as np
 
 # --- 1. CONFIGURATION (VERIFY THESE!) ---
 
@@ -16,7 +15,6 @@ diagnosis_column_name = 'diagnostic'
 # --- Diagnosis Labels ---
 
 melanoma_labels = ['MEL']
-
 non_melanoma_labels = ['NEV', 'BCC', 'ACK', 'SEK', 'SCC']
 
 # --- File Naming and Extensions ---
