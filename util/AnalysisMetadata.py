@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-# Required libraries
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
@@ -8,17 +6,17 @@ import numpy as np
 
 # --- 1. CONFIGURATION (VERIFY THESE!) ---
 
-csv_file_path = r'C:\Users\ruben\2025-FYP-Final\data\metadata.csv' # Path to metadata file
-image_dir = r'C:\Users\ruben\Desktop\Project_Data_Science\files\final_lesion_data' # Path to folder containing images/masks subfolders
+csv_file_path = r'' # Path to metadata file
+image_dir = r'' # Path to folder containing images and masks subfolders
 
 # --- Column Names in metadata.csv ---
-img_id_column = 'img_id'       # <<--- VERIFY THIS --- >> (Column with 'filename.png')
-diagnosis_column_name = 'diagnostic' # <<--- VERIFY THIS --- >> (Column with diagnosis)
+img_id_column = 'img_id'       
+diagnosis_column_name = 'diagnostic' 
 
 # --- Diagnosis Labels ---
-# <<--- VERIFY THIS --- >> (Exact labels in your CSV)
+
 melanoma_labels = ['MEL']
-# <<--- VERIFY THIS --- >> (Exact labels in your CSV)
+
 non_melanoma_labels = ['NEV', 'BCC', 'ACK', 'SEK', 'SCC']
 
 # --- File Naming and Extensions ---
@@ -118,7 +116,7 @@ def show_image_and_mask(index, dataframe):
     if dataframe is None or dataframe.empty or not all(col in dataframe.columns for col in required_cols) or index >= len(dataframe):
         print(f"Cannot display index {index}, issue with DataFrame or index.")
         return
-    img_id = dataframe.loc[index, img_id_column] # Use variable
+    img_id = dataframe.loc[index, img_id_column] 
     img = dataframe.loc[index, 'image']
     mask = dataframe.loc[index, 'mask']
     label = dataframe.loc[index, 'label']
@@ -136,7 +134,3 @@ if loaded_rows > 0:
         show_image_and_mask(i, df_filtered)
 else:
     print("\nSkipping display (no images loaded).")
-
-# --- END OF SCRIPT ---
-print("\nScript finished.")
-# df_filtered DataFrame should now contain loaded images and masks if successful.
