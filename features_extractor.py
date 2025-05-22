@@ -1,18 +1,9 @@
 import cv2
 import numpy as np
-from math import sqrt, floor, ceil, nan, pi
-from skimage import color, exposure
-from skimage.color import rgb2hsv, rgb2gray # Make sure rgb2hsv is imported correctly
-from skimage.feature import blob_log
-from skimage.filters import threshold_otsu
-from skimage.measure import label, regionprops
-from skimage.transform import resize, rotate # Ensure skimage.transform.rotate is imported
+from math import pi
+from skimage.transform import rotate # Ensure skimage.transform.rotate is imported
 from skimage import morphology
-from sklearn.cluster import KMeans
-from skimage.segmentation import slic
-from scipy.stats import circmean, circvar # circstd was here, circvar is more common for variance
-from statistics import variance # stdev was here, variance is more direct for variance
-from scipy.spatial import ConvexHull
+
 
 # --- Helper Functions ---
 def crop(mask):
@@ -149,3 +140,14 @@ def extract_all_abc_features(image, mask):
     all_features.update(color_feats)
     
     return all_features
+
+
+# image = cv2.imread(r'/Users/samuel/Desktop/ITU/Project in Data Science/final_lesion_data/images/PAT_8_15_820.png')
+# mask = cv2.imread(r'/Users/samuel/Desktop/ITU/Project in Data Science/final_lesion_data/masks/PAT_8_15_820_mask.png', cv2.IMREAD_GRAYSCALE)
+
+# mask = (mask > 0).astype(np.uint8)
+
+# features = extract_all_abc_features(image, mask)
+# print(features)
+
+
