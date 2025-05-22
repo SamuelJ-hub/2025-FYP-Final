@@ -5,8 +5,8 @@ import cv2
 
 # --- 1. CONFIGURATION (VERIFY THESE!) ---
 
-csv_file_path = r'' # Path to metadata file
-image_dir = r'' # Path to folder containing images and masks subfolders
+csv_file_path = r'/Users/samuel/Desktop/ITU/Project in Data Science/2025-FYP-Final/data/metadata.csv' # Path to metadata file
+image_dir = r'/Users/samuel/Desktop/ITU/Project in Data Science/final_lesion_data' # Path to folder containing images and masks subfolders
 
 # --- Column Names in metadata.csv ---
 img_id_column = 'img_id'       
