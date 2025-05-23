@@ -1,7 +1,6 @@
-import cv2
 import numpy as np
 from math import pi
-from skimage.transform import rotate # Ensure skimage.transform.rotate is imported
+from skimage.transform import rotate
 from skimage import morphology
 
 

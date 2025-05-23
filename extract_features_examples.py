@@ -140,8 +140,6 @@ def measure_regression(image):
     return num_pixels
 
 
-
-
 def get_compactness(mask):
     # mask = color.rgb2gray(mask)
     area = np.sum(mask)
