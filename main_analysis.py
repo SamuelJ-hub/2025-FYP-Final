@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from features_extractor import extract_all_abc_features
+from util.features_extractor import extract_all_abc_features
 from util.Data_Loader import load_and_preprocess_data, show_image_and_mask_examples
 
 

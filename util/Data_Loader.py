@@ -1,10 +1,12 @@
+# util/Data_Loader.py
+
 import pandas as pd
 import os
 import cv2
 import matplotlib.pyplot as plt
-from util.img_util import read_image_bgr, read_mask_grayscale, ImageDataLoader
+from util.img_util import read_image_bgr, read_mask_grayscale 
 
-# --- 1. CONFIGURATION (VERIFY THESE!) ---
+# --- 1. CONFIGURATION ---
 csv_file_path = r'/Users/samuel/Desktop/ITU/Project in Data Science/2025-FYP-Final/data/metadata.csv' # Path to metadata file
 image_dir = r'/Users/samuel/Desktop/ITU/Project in Data Science/final_lesion_data' # Path to folder containing images and masks subfolders
 
@@ -28,12 +30,12 @@ mask_extension = '.png'       # Mask file extension (e.g., '.png')
 # --- Helper function for loading images and masks ---
 def load_image_and_mask(row):
     """
-    Loads an image and its corresponding mask from the paths specified in the DataFrame row
-    using functions from img_util.py.
+    Loads an image and its corresponding mask from the paths specified in the DataFrame row.
+    Uses read_image_bgr and read_mask_grayscale from img_util.
     Returns the image and mask as NumPy arrays, or (None, None) if loading fails.
     """
     try:
-        # Use the functions imported from img_util
+        # Usa le funzioni importate da img_util
         img = read_image_bgr(os.path.normpath(row['image_path']))
         mask = read_mask_grayscale(os.path.normpath(row['mask_path']))
         
@@ -86,7 +88,7 @@ def show_image_and_mask_examples(dataframe, num_examples=5):
 # --- Main function to load and preprocess data ---
 def load_and_preprocess_data():
     """
-    Loads metadata, constructs paths using ImageDataLoader, filters, adds binary labels,
+    Loads metadata, constructs paths, filters, adds binary labels,
     checks file existence, and loads images/masks into a DataFrame.
     Returns the preprocessed DataFrame (df_filtered).
     """
@@ -109,47 +111,20 @@ def load_and_preprocess_data():
     print(f"Initial count for {melanoma_labels}: {melanoma_count_initial}")
     print(f"Initial count for {non_melanoma_labels}: {non_melanoma_count_initial}")
 
-    # --- Use ImageDataLoader to construct file paths ---
-    print("\nConstructing file paths using ImageDataLoader...")
+    print("\nConstructing file paths...")
     try:
-        # Create ImageDataLoader for images
-        # The directory for images is image_dir/images_subdir
-        image_loader = ImageDataLoader(
-            directory=os.path.join(image_dir, images_subdir),
-            file_extension=image_extension,
-            suffix="" # Images typically don't have a specific suffix
-        )
-        # Create ImageDataLoader for masks
-        # The directory for masks is image_dir/masks_subdir
-        mask_loader = ImageDataLoader(
-            directory=os.path.join(image_dir, masks_subdir),
-            file_extension=mask_extension,
-            suffix=mask_suffix # Masks have the _mask suffix
-        )
+        def get_base_id(image_id_with_ext):
+            if isinstance(image_id_with_ext, str) and image_id_with_ext.endswith(image_extension):
+                return image_id_with_ext[:-len(image_extension)]
+            return image_id_with_ext
 
-        # Create temporary DataFrames from the loaders
-        image_paths_df = pd.DataFrame({'image_path': list(image_loader)})
-        # The base_id for images is just the filename without extension
-        image_paths_df['base_id'] = image_paths_df['image_path'].apply(
-            lambda p: os.path.splitext(os.path.basename(p))[0]
-        )
-
-        mask_paths_df = pd.DataFrame({'mask_path': list(mask_loader)})
-        # The base_id for masks is the filename without suffix and extension
-        mask_paths_df['base_id'] = mask_paths_df['mask_path'].apply(
-            lambda p: os.path.splitext(os.path.basename(p))[0].replace(mask_suffix, '')
-        )
-        
-        # Merge paths with the metadata DataFrame
-        # Use a left merge to keep all CSV data and then filter based on found paths
-        df = pd.merge(df, image_paths_df, on='base_id', how='left')
-        df = pd.merge(df, mask_paths_df, on='base_id', how='left')
-        
-        print("Example constructed paths (first 2 rows after merge):")
-        print(df[['base_id', 'image_path', 'mask_path']].head(2))
-
+        df['base_id'] = df[img_id_column].apply(get_base_id)
+        df['image_path'] = df['base_id'].apply(lambda base_id: os.path.join(image_dir, images_subdir, f"{base_id}{image_extension}"))
+        df['mask_path'] = df['base_id'].apply(lambda base_id: os.path.join(image_dir, masks_subdir, f"{base_id}{mask_suffix}{mask_extension}"))
+        print("Example constructed paths (first 2 rows):")
+        print(df[['image_path', 'mask_path']].head(2))
     except Exception as e:
-        print(f"Error during path construction with ImageDataLoader: {e}")
+        print(f"Error during path construction: {e}")
         return None
 
     all_relevant_labels = melanoma_labels + non_melanoma_labels
@@ -160,29 +135,24 @@ def load_and_preprocess_data():
     print("\nCounts for binary label:")
     print(df_filtered['label'].value_counts())
 
-    print("\nChecking file existence on disk (via paths generated by ImageDataLoader)...")
-    # After the merge, if a path was not found by ImageDataLoader, it will be NaN.
-    # We check if the paths exist after the merge, implying they were found by the loader.
-    df_filtered['image_exists'] = df_filtered['image_path'].notna()
-    df_filtered['mask_exists'] = df_filtered['mask_path'].notna()
+    print("\nChecking file existence on disk...")
+    df_filtered['image_exists'] = df_filtered['image_path'].apply(os.path.exists)
+    df_filtered['mask_exists'] = df_filtered['mask_path'].apply(os.path.exists)
     
     missing_images = df_filtered['image_exists'].value_counts().get(False, 0)
     missing_masks = df_filtered['mask_exists'].value_counts().get(False, 0)
-    print(f"Missing images in expected folders/format: {missing_images}")
-    print(f"Missing masks in expected folders/format: {missing_masks}")
+    print(f"Missing images: {missing_images}")
+    print(f"Missing masks: {missing_masks}")
 
-    # Keep only rows where both image and mask paths were successfully identified and merged
     df_filtered = df_filtered[df_filtered['image_exists'] & df_filtered['mask_exists']].copy()
-    print(f"Kept {len(df_filtered)} rows where both image and mask paths were successfully identified.")
+    print(f"Kept {len(df_filtered)} rows where both image and mask exist.")
     df_filtered.reset_index(drop=True, inplace=True)
 
     print("\nLoading images and masks into DataFrame (this might take time for large datasets)...")
     if not df_filtered.empty:
-        # Use the helper function load_image_and_mask, which now uses functions from img_util.
         df_filtered[['image', 'mask']] = df_filtered.apply(load_image_and_mask, axis=1, result_type='expand')
         
         initial_rows_after_loading_attempt = len(df_filtered)
-        # Drop rows where the actual image/mask loading (cv2.imread) failed
         df_filtered.dropna(subset=['image', 'mask'], inplace=True)
         loaded_rows_final = len(df_filtered)
         print(f"Loaded data for {loaded_rows_final} out of {initial_rows_after_loading_attempt} attempted. Removed {initial_rows_after_loading_attempt - loaded_rows_final} rows with loading errors.")
@@ -201,19 +171,16 @@ def load_and_preprocess_data():
     return df_filtered # Return the preprocessed DataFrame
 
 # --- This part ensures the script doesn't run automatically when imported ---
-# It only runs if you execute Data_Loader.py directly (e.g., python Data_Loader.py)
 if __name__ == "__main__":
     df_loaded = load_and_preprocess_data()
     
     if df_loaded is not None and not df_loaded.empty:
         print("\n--- First 5 rows of the loaded DataFrame (df_loaded) ---")
-        # Display all columns except the heavy 'image' and 'mask' NumPy arrays
         cols_to_display = [col for col in df_loaded.columns if col not in ['image', 'mask']]
         print(df_loaded[cols_to_display].head())
-        print("\n('image' and 'mask' columns contain NumPy arrays and are not shown here, but are present in the DataFrame.)")
+        print("\n('image' and 'mask' columns contain NumPy arrays and not shown here, but are present in the DataFrame.)")
         
         # Uncomment if you want to see image examples when running Data_Loader.py directly
         # show_image_and_mask_examples(df_loaded, num_examples=3)
-        
     else:
         print("\nNo data loaded successfully to display.")
