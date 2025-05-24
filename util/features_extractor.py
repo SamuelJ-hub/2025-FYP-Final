@@ -1,29 +1,21 @@
-# util/features_extractor.py
-
 import numpy as np
 from math import pi
 from skimage.transform import rotate
 from skimage import morphology
-# Import your existing helper functions if they are still in this file
-# For example, if crop and find_midpoint_v4 are here:
-# from .your_helper_module import crop, find_midpoint_v4 # Or define them here
-
-# --- NEW: Import the hair analysis function ---
 from util.hair_feature_extractor import analyze_hair_amount
 
 
-# --- Helper Functions (keep them here or move to another util file if preferred) ---
+# --- Helper Functions ---
 def crop(mask):
-    # Make sure this function is robust, e.g., handles empty nonzeros
     y_nonzero, x_nonzero = np.nonzero(mask)
-    if y_nonzero.size == 0 or x_nonzero.size == 0: # Handle empty mask after rotation/cropping
-        return np.array([[]], dtype=mask.dtype) # Return an empty array of same type
+    if y_nonzero.size == 0 or x_nonzero.size == 0:
+        return np.array([[]], dtype=mask.dtype)
 
     mid = find_midpoint_v4(mask)
     y_lims = [np.min(y_nonzero), np.max(y_nonzero)]
-    x_lims_arr = np.array([np.min(x_nonzero), np.max(x_nonzero)]) # Renamed to avoid conflict
+    x_lims_arr = np.array([np.min(x_nonzero), np.max(x_nonzero)])
     x_dist = max(np.abs(x_lims_arr - mid))
-    x_lims_calc = [mid - x_dist, mid + x_dist] # Renamed
+    x_lims_calc = [mid - x_dist, mid + x_dist]
     x_start = max(0, int(x_lims_calc[0]))
     x_end = min(mask.shape[1], int(x_lims_calc[1]))
     y_start = max(0, int(y_lims[0]))
@@ -47,10 +39,10 @@ def find_midpoint_v4(mask):
     return mask.shape[1] -1 # Fallback: return last index if not found (shouldn't happen if total_sum > 0)
 
 
-# --- Asymmetry Function ---
+# --- ASSYMETRY FEATURE ---
 def get_asymmetry(mask):
     scores = []
-    current_mask_copy = mask.astype(np.uint8).copy() # Ensure mask is uint8 for rotate
+    current_mask_copy = mask.astype(np.uint8).copy() 
     for _ in range(6):
         segment = crop(current_mask_copy)
         if segment.size == 0 or np.sum(segment) == 0:
@@ -68,29 +60,21 @@ def get_asymmetry(mask):
     else:
         return {'rotational_asymmetry_score': np.nan}
 
-# --- Border (Compactness) Feature ---
+# --- BORDER (Compactness) FEATURE ---
 def compactness_score(mask):
     A = np.sum(mask)
     if A == 0: return np.nan
     struct_el = morphology.disk(2)
     mask_eroded = morphology.binary_erosion(mask, struct_el)
     perimeter_pixels = np.sum(mask - mask_eroded)
-    if perimeter_pixels == 0: return np.nan # or a value indicating extreme compactness/small size
+    if perimeter_pixels == 0: return np.nan
     
-    # Polsby-Popper compactness: (4*pi*A)/(P^2). 1 for circle, <1 for others.
-    # To make higher values mean more irregular, you can use 1/compactness or (P^2)/(4*pi*A)
-    # Your original formula was 1 - compactness_value, which gives 0 for circle.
-    # Let's stick to a common definition where higher is more irregular.
-    # Compactness (Polsby-Popper) = (4 * pi * A) / (perimeter_pixels ** 2)
-    # Irregularity = 1 / Compactness (Polsby-Popper) or (perimeter_pixels ** 2) / (4 * pi * A)
-    # The provided code was: score = round(1 - compactness_value, 3)
-    # This means score is 0 for circle, higher for irregular. Let's keep it for consistency with your previous features.
     compactness_value = (4 * pi * A) / (perimeter_pixels ** 2)
     score = round(1 - compactness_value, 3)
     return score
 
 
-# --- Color Features ---
+# --- COLOR FEATURE ---
 def get_color_features(image, mask):
     binary_mask_bool = (mask > 0) # Ensure mask is boolean for indexing
     lesion_pixels = image[binary_mask_bool]
@@ -114,8 +98,8 @@ def get_color_features(image, mask):
     return features
 
 
-# --- Combined Feature Extraction ---
-def extract_all_features(image, mask): # Renamed to reflect it does more than ABC
+# --- Features Extraction ---
+def extract_all_features(image, mask):
     """
     Combines all feature extraction functions into one master function.
     Ensures mask is binary (0 or 1) for feature functions.
@@ -126,15 +110,15 @@ def extract_all_features(image, mask): # Renamed to reflect it does more than AB
     binary_mask_01 = (mask > 0).astype(np.uint8)
 
     # Asymmetry
-    all_features.update(get_asymmetry(binary_mask_01.copy())) # Pass copy as it's modified
+    all_features.update(get_asymmetry(binary_mask_01.copy()))
 
     # Border
     all_features.update({'compactness_score': compactness_score(binary_mask_01)})
 
     # Color
-    all_features.update(get_color_features(image, binary_mask_01)) # image, and the 0/1 mask
+    all_features.update(get_color_features(image, binary_mask_01))
 
-    # --- Hair Feature (Imported) ---
-    all_features.update(analyze_hair_amount(image)) # Pass the original BGR image
+    # --- Hair Feature ---
+    all_features.update(analyze_hair_amount(image))
 
     return all_features

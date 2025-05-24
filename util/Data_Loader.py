@@ -148,7 +148,7 @@ def load_and_preprocess_data():
     print(f"Kept {len(df_filtered)} rows where both image and mask exist.")
     df_filtered.reset_index(drop=True, inplace=True)
 
-    print("\nLoading images and masks into DataFrame (this might take time for large datasets)...")
+    print("\nLoading images and masks into DataFrame (this might take time)...")
     if not df_filtered.empty:
         df_filtered[['image', 'mask']] = df_filtered.apply(load_image_and_mask, axis=1, result_type='expand')
         
