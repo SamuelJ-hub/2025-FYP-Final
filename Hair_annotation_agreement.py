@@ -17,7 +17,6 @@ def analyze_hair_agreement():
         manual_df = pd.read_csv(manual_annotations_path)
         auto_df_on_manual_subset = pd.read_csv(auto_features_on_manual_dataset_path)
 
-        # --- PREPARAZIONE DELLE ANNOTAZIONI MANUALI ---
         if manual_rating_column not in manual_df.columns:
             print(f"Error: Manual rating column '{manual_rating_column}' not found in {manual_annotations_path}.")
             return
@@ -42,29 +41,26 @@ def analyze_hair_agreement():
         manual_labels = comparison_df['manual_hair_level']
         auto_labels = comparison_df['hair_level_auto']
 
-
-
-
-
-
-
-
-
-
-
-        # --- Analisi dell'Accordo ---
+        # --- Agreement Analysis ---
         print("\n--- Agreement Analysis Results ---")
         print(f"Comparing manual ratings from '{manual_rating_column}' with automatic 'hair_level_auto'.")
         print(f"Number of common images for comparison: {len(comparison_df)}")
 
-        # A) Matrice di Accordo (Confusion Matrix)
+        # Agreement Matrix (Confusion Matrix)
         print("\nAgreement Matrix (Rows: Manual Annotation, Cols: Automatic Annotation):")
-        labels = sorted(np.unique(manual_labels.union(auto_labels)))
+        labels = sorted(np.union1d(manual_labels.unique(), auto_labels.unique()))
         conf_matrix = confusion_matrix(manual_labels, auto_labels, labels=labels)
         conf_matrix_df = pd.DataFrame(conf_matrix, index=[f'Manual_{i}' for i in labels], columns=[f'Auto_{i}' for i in labels])
         print(conf_matrix_df)
 
-        # Visualizzazione della Matrice di Accordo
+        # Cohen's Kappa Score
+        kappa = cohen_kappa_score(manual_labels, auto_labels)
+        print(f"\nCohen's Kappa Score: {kappa:.4f}")
+        print("Interpretation of Kappa Score:")
+        print(" > 0.8: Almost Perfect | 0.6-0.8: Substantial | 0.4-0.6: Moderate")
+        print(" 0.2-0.4: Fair         | 0.0-0.2: Slight      | < 0.0: Poor")
+
+        # Visualization of the Agreement Matrix
         plt.figure(figsize=(7, 6))
         sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', cbar=False,
                     xticklabels=[f'Auto_{l}' for l in labels], yticklabels=[f'Manual_{l}' for l in labels])
@@ -73,14 +69,7 @@ def analyze_hair_agreement():
         plt.ylabel('Manual Annotation')
         plt.show()
 
-        # B) Cohen's Kappa Score
-        kappa = cohen_kappa_score(manual_labels, auto_labels)
-        print(f"\nCohen's Kappa Score: {kappa:.4f}")
-        print("Interpretation of Kappa Score:")
-        print(" > 0.8: Almost Perfect | 0.6-0.8: Substantial | 0.4-0.6: Moderate")
-        print(" 0.2-0.4: Fair         | 0.0-0.2: Slight      | < 0.0: Poor")
-
-        # C) Visualizzazione della distribuzione delle annotazioni
+        # Visualization of the annotation distributions
         plt.figure(figsize=(12, 5))
         plt.subplot(1, 2, 1)
         sns.countplot(x=manual_labels, palette='viridis')
