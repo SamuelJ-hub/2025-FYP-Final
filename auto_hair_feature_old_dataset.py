@@ -12,7 +12,6 @@ def run_manual_dataset_hair_feature_extraction():
     output_csv_path = './data/auto_hair_features_on_manual_dataset.csv'
 
 
-
     extracted_hair_data = []
 
     try:
