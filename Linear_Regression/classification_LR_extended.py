@@ -28,7 +28,6 @@ features_for_extended_model = [
     'compactness_score',
     'mean_color_B', 'mean_color_G', 'mean_color_R',
     'std_color_B', 'std_color_G', 'std_color_R',
-    'hair_level',
     'hair_coverage_pct'
 ]
 
