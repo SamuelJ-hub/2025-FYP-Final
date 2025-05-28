@@ -1,5 +1,3 @@
-# util/Data_Loader.py
-
 import pandas as pd
 import os
 import cv2
@@ -7,8 +5,8 @@ import matplotlib.pyplot as plt
 from util.img_util import read_image_bgr, read_mask_grayscale 
 
 # --- 1. CONFIGURATION ---
-csv_file_path = r'/Users/samuel/Desktop/ITU/Project in Data Science/2025-FYP-Final/data/metadata.csv' # Path to metadata file
-image_dir = r'/Users/samuel/Desktop/ITU/Project in Data Science/final_lesion_data' # Path to folder containing images and masks subfolders
+csv_file_path = 'metadata.csv' # Path to metadata file
+image_dir = 'data'  # Path to folder containing images and masks subfolders
 
 # --- Column Names in metadata.csv ---
 img_id_column = 'img_id'       

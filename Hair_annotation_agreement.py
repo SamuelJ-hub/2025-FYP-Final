@@ -8,8 +8,8 @@ def analyze_hair_agreement():
    
     print("--- Starting Hair Annotation Agreement Analysis ---")
 
-    manual_annotations_path = '/Users/samuel/Desktop/ITU/Project in Data Science/2025-FYP-Final/data/result.csv'
-    auto_features_on_manual_dataset_path = './data/auto_hair_features_on_manual_dataset.csv'
+    manual_annotations_path = 'result.csv'
+    auto_features_on_manual_dataset_path = 'auto_hair_features_on_manual_dataset.csv'
 
     manual_rating_column = ['Rating_1', 'Rating_2', 'Rating_3', 'Rating_4']
 
