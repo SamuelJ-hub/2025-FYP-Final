@@ -11,34 +11,43 @@ def analyze_hair_agreement():
     manual_annotations_path = '/Users/samuel/Desktop/ITU/Project in Data Science/2025-FYP-Final/data/result.csv'
     auto_features_on_manual_dataset_path = './data/auto_hair_features_on_manual_dataset.csv'
 
-    manual_rating_column = 'Rating_1' 
+    manual_rating_column = ['Rating_1', 'Rating_2', 'Rating_3', 'Rating_4']
 
     try:
         manual_df = pd.read_csv(manual_annotations_path)
         auto_df_on_manual_subset = pd.read_csv(auto_features_on_manual_dataset_path)
 
-        if manual_rating_column not in manual_df.columns:
-            print(f"Error: Manual rating column '{manual_rating_column}' not found in {manual_annotations_path}.")
+        missing_manual_cols = [col for col in manual_rating_column if col not in manual_df.columns]
+        if missing_manual_cols:
+            print(f"Error: Missing manual rating columns in {manual_annotations_path}: {missing_manual_cols}")
+            print(f"Available columns in manual_df: {manual_df.columns.tolist()}")
             return
-        manual_df['manual_hair_level'] = manual_df[manual_rating_column]
+
+        for col in manual_rating_column:
+            manual_df[col] = pd.to_numeric(manual_df[col], errors='coerce')
+
+        manual_df['manual_hair_level_avg'] = manual_df[manual_rating_column].mean(axis=1)
+
+        manual_df['manual_hair_level_rounded'] = manual_df['manual_hair_level_avg'].round().astype(int)
+
         
         comparison_df = pd.merge(
-            manual_df[['File_ID', 'manual_hair_level']],
+            manual_df[['File_ID', 'manual_hair_level_rounded']],
             auto_df_on_manual_subset[['File_ID', 'hair_level_auto']],
             on='File_ID',
             how='inner' 
         )
 
-        if 'manual_hair_level' not in comparison_df.columns or 'hair_level_auto' not in comparison_df.columns:
-            print("Error: Required columns ('manual_hair_level' or 'hair_level_auto') not found after merge.")
+        if 'manual_hair_level_rounded' not in comparison_df.columns or 'hair_level_auto' not in comparison_df.columns:
+            print("Error: Required columns ('manual_hair_level_rounded' or 'hair_level_auto') not found after merge.")
             return
         
-        comparison_df.dropna(subset=['manual_hair_level', 'hair_level_auto'], inplace=True)
+        comparison_df.dropna(subset=['manual_hair_level_rounded', 'hair_level_auto'], inplace=True)
         
-        comparison_df['manual_hair_level'] = comparison_df['manual_hair_level'].astype(int)
+        comparison_df['manual_hair_level_rounded'] = comparison_df['manual_hair_level_rounded'].astype(int)
         comparison_df['hair_level_auto'] = comparison_df['hair_level_auto'].astype(int)
 
-        manual_labels = comparison_df['manual_hair_level']
+        manual_labels = comparison_df['manual_hair_level_rounded']
         auto_labels = comparison_df['hair_level_auto']
 
         # --- Agreement Analysis ---
