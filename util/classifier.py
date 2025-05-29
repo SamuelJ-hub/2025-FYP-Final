@@ -1,3 +1,7 @@
+# This module defines the MelanomaClassifier class, which handles
+# training, prediction, saving, and loading of a Logistic Regression model
+# for melanoma classification, including feature scaling and hyperparameter tuning.
+
 import joblib
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
@@ -5,56 +9,34 @@ from sklearn.preprocessing import StandardScaler
 
 class MelanomaClassifier:
     """
-    Class to train, predict, and manage a melanoma classifier based on
-    Logistic Regression, including standardization and GridSearch.
+    Trains, predicts, and manages a melanoma classifier using Logistic Regression
+    with standardization and GridSearch for hyperparameter tuning.
     """
     def __init__(self, random_state=42):
-        #This is the constructor. It funs when you create a MelanomaClassifier object.
-        #It sets up a scaler to normalize data and prepares fo the model.
+        # Constructor: Initializes the scaler and model (to be trained).
         self.scaler = StandardScaler()
         self.model = None  # The model will be initialized after training
         self.random_state = random_state
 
     def fit(self, X_train, y_train):
-        # This function trains the machine learning model.
-        # It first scales the training data (X_train) so that all features have a similar influence.
-        # Then, it uses GridSearchCV to find the best settings (hyperparameters) for the
-        # Logistic Regression model by trying out different combinations.
-        # The model is optimized to have the best 'recall' score, which is important for catching melanoma cases.
-        """
-        Fits the scaler on the training data and then the classifier with GridSearch.
-        
-        Args:
-            X_train (pd.DataFrame or np.array): Unscaled training features.
-            y_train (pd.Series or np.array): Training labels.
-        
-        Returns:
-            sklearn.linear_model.LogisticRegression: The trained and optimized model.
-        """
+        # Scales training data and trains the Logistic Regression model using GridSearchCV.
+        # Optimizes for 'recall' to better identify melanoma cases.
         print("Scaling training data...")
         X_train_scaled = self.scaler.fit_transform(X_train)
         # Fit the scaler on training data and transform it (normalize).
 
         print("Starting GridSearchCV for Logistic Regression...")
-        # Define the basic Logistic Regression model we want to tune.
-        # solver='liblinear' is good for smaller datasets.
-        # class_weight='balanced' helps with imbalanced datasets (like melanoma vs. non-melanoma).
-        # max_iter=1000 gives it more chances to find the best solution.
         lr_base = LogisticRegression(random_state=self.random_state, solver='liblinear', class_weight='balanced', max_iter=1000)
+        
+        # Define parameter grid for hyperparameter tuning.
         param_grid = {
             'C': [0.001, 0.01, 0.1, 1, 10, 100],
             'penalty': ['l1', 'l2']
         }
         
-        # Initialization and execution of GridSearch
+        # Perform GridSearch with 5-fold cross-validation.
         grid_search = GridSearchCV(lr_base, param_grid, cv=5, scoring='recall', verbose=1, n_jobs=-1)
-        # Set up GridSearch. It will try all combinations from param_grid.
-        # cv=5 means 5-fold cross-validation (splits data into 5 parts for robust testing).
-        # scoring='recall' means we want the model that's best at finding actual positive cases (melanoma).
-        # verbose=1 shows some progress messages.
-        # n_jobs=-1 uses all available computer cores to speed things up.
         grid_search.fit(X_train_scaled, y_train)
-         # Train the GridSearch (which trains many models) on the scaled training data.
 
         self.model = grid_search.best_estimator_
         print(f"Best hyperparameters found: {grid_search.best_params_}")
