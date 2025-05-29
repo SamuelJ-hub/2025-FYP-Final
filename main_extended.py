@@ -126,7 +126,7 @@ def main():
     plt.show()
 
 
-    # 6. FINAL EVALUATION on the Test Set (DO NOT USE FOR TUNING OR MODEL SELECTION)
+    # 6. FINAL EVALUATION on the Test Set 
     print("\n--- FINAL EVALUATION on Test Set ---")
     # Pass unscaled X_test data, MelanomaClassifier handles scaling
     y_pred_test = melanoma_clf.predict(X_test) 
