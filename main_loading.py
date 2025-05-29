@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from util.features_extractor import extract_all_features
-from util.Data_Loader import load_and_preprocess_data
+from util.data_loader import load_and_preprocess_data
 
 print("--- Start of main analysis pipeline ---")
 
