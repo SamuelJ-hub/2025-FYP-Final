@@ -149,5 +149,4 @@ class MelanomaClassifier:
 # It's often used for simple tests or to show how to use the module.
 if __name__ == '__main__':
     print("This is the classifier module. It defines the model's logic.")
-    print("To run the full pipeline (training, evaluation, saving), execute the main script.")")
     print("To run the full pipeline (training, evaluation, saving), execute the main script.")
