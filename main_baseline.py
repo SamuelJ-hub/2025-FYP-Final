@@ -1,3 +1,8 @@
+# This script trains and evaluates a baseline Logistic Regression model
+# for melanoma classification using only ABC (Asymmetry, Border, Color) features.
+# It includes data loading, preprocessing, model training/loading, evaluation,
+# and options for saving the model and detailed results.
+
 import pandas as pd
 import numpy as np
 import seaborn as sns

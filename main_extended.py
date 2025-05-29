@@ -1,3 +1,7 @@
+# This script trains and evaluates an EXTENDED Logistic Regression model
+# for melanoma classification. It uses ABC features PLUS hair features.
+# It leverages the MelanomaClassifier class for training (with GridSearch),
+# prediction, and model/scaler persistence. It also includes a train/validation/test split.
 import argparse
 import os
 import pandas as pd

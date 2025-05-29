@@ -1,3 +1,8 @@
+# This is the main script for data processing and feature extraction.
+# It loads the initial dataset, preprocesses it (including loading images and masks),
+# then extracts all relevant features (ABC and Hair), and finally saves
+# the complete feature set to a CSV file for model training.
+
 import pandas as pd
 import numpy as np
 from util.features_extractor import extract_all_features
