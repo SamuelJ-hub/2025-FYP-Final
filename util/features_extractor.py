@@ -1,3 +1,6 @@
+# util/features_extractor.py
+# This script defines functions to extract various numerical features 
+# (Asymmetry, Border, Color, Hair) from lesion images and masks.
 import numpy as np
 from math import pi
 from skimage.transform import rotate
@@ -7,6 +10,7 @@ from util.hair_feature_extractor import analyze_hair_amount
 
 # --- Helper Functions ---
 def crop(mask):
+    """Crops the input mask to the tightest bounding box around the lesion."""
     y_nonzero, x_nonzero = np.nonzero(mask)
     if y_nonzero.size == 0 or x_nonzero.size == 0:
         return np.array([[]], dtype=mask.dtype)
@@ -28,6 +32,7 @@ def crop(mask):
 
 
 def find_midpoint_v4(mask):
+    """Finds a vertical 'center of mass' for the lesion in the mask to aid cropping."""
     summed = np.sum(mask, axis=0)
     total_sum = np.sum(summed)
     if total_sum == 0:
@@ -41,6 +46,11 @@ def find_midpoint_v4(mask):
 
 # --- ASSYMETRY FEATURE ---
 def get_asymmetry(mask):
+    """
+    Calculates rotational asymmetry. 
+    Averages scores from comparing rotated mask segments to their horizontal flips.
+    Returns a dictionary: {'rotational_asymmetry_score': value}.
+    """
     scores = []
     current_mask_copy = mask.astype(np.uint8).copy() 
     for _ in range(6):
@@ -62,6 +72,11 @@ def get_asymmetry(mask):
 
 # --- BORDER (Compactness) FEATURE ---
 def compactness_score(mask):
+    """
+    Calculates border irregularity using a compactness score.
+    Score = 1 - (4*pi*Area / Perimeter^2). Closer to 0 is more circular/regular.
+    Returns a single float score.
+    """
     A = np.sum(mask)
     if A == 0: return np.nan
     struct_el = morphology.disk(2)
@@ -76,6 +91,10 @@ def compactness_score(mask):
 
 # --- COLOR FEATURE ---
 def get_color_features(image, mask):
+    """
+    Extracts mean and standard deviation of BGR color channels from the lesion area.
+    Returns a dictionary with 6 color features.
+    """
     binary_mask_bool = (mask > 0) # Ensure mask is boolean for indexing
     lesion_pixels = image[binary_mask_bool]
 
@@ -101,8 +120,8 @@ def get_color_features(image, mask):
 # --- Features Extraction ---
 def extract_all_features(image, mask):
     """
-    Combines all feature extraction functions into one master function.
-    Ensures mask is binary (0 or 1) for feature functions.
+    Combines all individual feature extraction functions (ABC + Hair) for a given image and mask.
+    Returns a single dictionary containing all extracted features.
     """
     all_features = {}
 

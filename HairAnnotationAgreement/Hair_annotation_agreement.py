@@ -91,7 +91,7 @@ def analyze_hair_agreement():
         plt.figure(figsize=(12, 5))
         plt.subplot(1, 2, 1)
         sns.countplot(x=manual_labels, palette='viridis')
-        plt.title(f'Distribution of Manual Hair Annotations ({manual_rating_column})')
+        plt.title(f'Distribution of Manual Hair Annotations')
         plt.xlabel('Hair Level (Manual)')
         plt.ylabel('Count')
 

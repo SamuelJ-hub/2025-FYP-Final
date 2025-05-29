@@ -1,3 +1,6 @@
+# This script is responsible for loading the main dataset:
+# It reads the metadata, finds image and mask files,
+# loads them, and prepares a clean DataFrame for feature extraction.                     
 import pandas as pd
 import os
 import cv2

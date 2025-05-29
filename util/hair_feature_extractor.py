@@ -1,7 +1,25 @@
+# This script defines a function to analyze the amount of hair in an image
+# and classify it into levels based on coverage percentage.
 import cv2
 import numpy as np
 
 def analyze_hair_amount(image, low_threshold_pct=3, high_threshold_pct=10):
+    """
+    Analyzes an image to estimate hair presence and categorizes it.
+
+    It converts the image to grayscale, applies black-hat filtering to highlight
+    hair-like structures, thresholds the result, and then calculates the
+    percentage of hair coverage to assign a hair level (0, 1, or 2).
+
+    Args:
+        image (numpy.ndarray): The input color image (BGR format).
+        low_threshold_pct (float, optional): Lower percentage threshold for 'some hair' (level 1). Defaults to 3.
+        high_threshold_pct (float, optional): Higher percentage threshold for 'a lot of hair' (level 2). Defaults to 10.
+
+    Returns:
+        dict: A dictionary with 'hair_level' (0, 1, or 2) and 
+              'hair_coverage_pct' (float percentage), or NaNs if input is invalid.
+    """
     if image is None:
         return {'hair_level': np.nan, 'hair_coverage_pct': np.nan}
 
