@@ -10,9 +10,9 @@ from util.classifier import MelanomaClassifier
 
 def main():
     """
-    Funzione principale per eseguire la pipeline di classificazione.
-    Gestisce il caricamento dei dati, la suddivisione, l'addestramento/caricamento del modello,
-    la valutazione e il salvataggio dei risultati.
+    Main function to run the classification pipeline.
+    Handles data loading, splitting, model training/loading,
+    evaluation, and saving results.
     """
     parser = argparse.ArgumentParser(description="Run the Logistic Regression Classification Pipeline with ABC + Hair Features.")
     parser.add_argument('--data_path', type=str, default='df_with_all_features.csv',
@@ -26,12 +26,12 @@ def main():
 
     args = parser.parse_args()
 
-    # Creare la directory di output se non esiste
+    # Create the output directory if it does not exist
     os.makedirs(args.output_dir, exist_ok=True)
 
     print("--- Start of Extended Classification Pipeline (ABC + Hair Features) ---")
 
-    # 1. Caricamento del DataFrame finale con le feature
+    # 1. Load the final DataFrame with features
     try:
         df_final = pd.read_csv(args.data_path)
         print(f"DataFrame '{args.data_path}' loaded successfully. Rows: {len(df_final)}")
@@ -42,7 +42,7 @@ def main():
         print(f"Error while loading the DataFrame: {e}")
         return
 
-    # 2. Definizione e preparazione delle feature per il modello esteso
+    # 2. Define and prepare features for the extended model
     features_for_extended_model = [
         'rotational_asymmetry_score', 'compactness_score',
         'mean_color_B', 'mean_color_G', 'mean_color_R',
@@ -56,7 +56,7 @@ def main():
         print("Make sure that your feature extraction pipeline is generating them correctly.")
         return
 
-    # Filtrare il DataFrame rimuovendo righe con NaN in QUALSIASI delle feature o dell'etichetta
+    # Filter the DataFrame by removing rows with NaN in ANY of the features or the label
     df_processed = df_final.dropna(subset=features_for_extended_model + ['label'])
     print(f"Rows after removing NaN in ABC + Hair features and label: {len(df_processed)}")
 
@@ -71,36 +71,36 @@ def main():
 
     print(f"\nClass distribution in the extended dataset (1=melanoma, 0=non_melanoma):\n{y.value_counts()}")
 
-    # 3. Suddivisione del dataset in Training, Validation e Test set
-    # Primo split: 80% per Training+Validation, 20% per Test
+    # 3. Split the dataset into Training, Validation, and Test sets
+    # First split: 80% for Training+Validation, 20% for Test
     X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=0.20, random_state=42, stratify=y)
     print(f"\nInitial split: Temp set (for Training+Validation) {X_temp.shape[0]} samples, Test set {X_test.shape[0]} samples.")
 
-    # Secondo split: Dal set 'Temp', 75% per Training, 25% per Validation
-    # Questo porta a una suddivisione complessiva di 60% Training, 20% Validation, 20% Test
+    # Second split: From 'Temp', 75% for Training, 25% for Validation
+    # This results in an overall split of 60% Training, 20% Validation, 20% Test
     X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.25, random_state=42, stratify=y_temp)
     print(f"Secondary split: Training set {X_train.shape[0]} samples, Validation set {X_val.shape[0]} samples.")
     print(f"Overall data split: Training ({X_train.shape[0]} samples ~60%), Validation ({X_val.shape[0]} samples ~20%), Test ({X_test.shape[0]} samples ~20%).")
 
-    # 4. Inizializzazione e Addestramento / Caricamento del Classificatore
+    # 4. Initialize and Train / Load the Classifier
     melanoma_clf = MelanomaClassifier(random_state=42)
 
     if args.load_model_path:
-        # Carica un modello pre-addestrato se il percorso è fornito
+        # Load a pre-trained model if the path is provided
         melanoma_clf = MelanomaClassifier.load_model(args.load_model_path)
         print("Model loaded successfully. Skipping training.")
     else:
-        # Addestra il modello se non è stato specificato un modello da caricare
+        # Train the model if a model to load is not specified
         print("\nTraining Extended Logistic Regression model...")
-        # Passa i dati X_train non scalati, la classe MelanomaClassifier si occupa dello scaling
+        # Pass unscaled X_train data, MelanomaClassifier handles scaling
         melanoma_clf.fit(X_train, y_train) 
-        # Salva il modello addestrato (e lo scaler)
+        # Save the trained model (and scaler)
         melanoma_clf.save_model(args.save_model_path)
 
 
-    # 5. Valutazione sul Set di Validazione (per approfondimenti sul tuning)
+    # 5. Evaluation on the Validation Set (for tuning insights)
     print("\n--- Evaluating Extended Model on Validation Set ---")
-    # Passa i dati X_val non scalati, la classe MelanomaClassifier si occupa dello scaling
+    # Pass unscaled X_val data, MelanomaClassifier handles scaling
     y_pred_val = melanoma_clf.predict(X_val) 
     y_prob_val = melanoma_clf.predict_proba(X_val)
 
@@ -119,13 +119,12 @@ def main():
     plt.title('Confusion Matrix - Extended Model (Validation Set)')
     plt.xlabel('Predicted')
     plt.ylabel('True')
-    plt.savefig(os.path.join(args.output_dir, 'confusion_matrix_validation.png'))
     plt.show()
 
 
-    # 6. VALUTAZIONE FINALE sul Test Set (NON USARE PER TUNING O SELEZIONE DEL MODELLO)
+    # 6. FINAL EVALUATION on the Test Set (DO NOT USE FOR TUNING OR MODEL SELECTION)
     print("\n--- FINAL EVALUATION on Test Set ---")
-    # Passa i dati X_test non scalati, la classe MelanomaClassifier si occupa dello scaling
+    # Pass unscaled X_test data, MelanomaClassifier handles scaling
     y_pred_test = melanoma_clf.predict(X_test) 
     y_prob_test = melanoma_clf.predict_proba(X_test)
 
@@ -145,7 +144,6 @@ def main():
     plt.title('Confusion Matrix - Extended Model (Test Set)')
     plt.xlabel('Predicted')
     plt.ylabel('True')
-    plt.savefig(os.path.join(args.output_dir, 'confusion_matrix_test.png'))
     plt.show()
 
     fpr_extended, tpr_extended, thresholds = roc_curve(y_test, y_prob_test)
@@ -159,20 +157,19 @@ def main():
     plt.title('ROC Curve - Extended Model (Test Set)')
     plt.legend(loc='lower right')
     plt.grid(True)
-    plt.savefig(os.path.join(args.output_dir, 'roc_curve_extended_model.png'))
     plt.show()
 
-    # Opzionale: salvare i risultati delle predizioni su file CSV
-    # Reperiamo anche i 'filename' se sono presenti nel df_processed
+    # save prediction results to CSV file
+    # Also retrieve 'filename' if present in df_processed
     results_df = df_processed.loc[X_test.index].copy()
     results_df['true_label'] = y_test.values
     results_df['predicted_label'] = y_pred_test
     results_df['predicted_proba_melanoma'] = y_prob_test
     
-    # Se 'filename' è una colonna, la includiamo nei risultati salvati
+    # If 'filename' is a column, include it in the saved results
     columns_to_save = ['label', 'true_label', 'predicted_label', 'predicted_proba_melanoma'] + features_for_extended_model
     if 'filename' in df_processed.columns:
-        columns_to_save.insert(0, 'filename') # Aggiungiamo 'filename' all'inizio
+        columns_to_save.insert(0, 'filename') # Add 'filename' at the beginning
     
     results_df = results_df[columns_to_save]
     results_df.to_csv(os.path.join(args.output_dir, 'results_extended_model.csv'), index=False)

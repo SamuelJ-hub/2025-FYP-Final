@@ -21,9 +21,12 @@ def main_baseline():
     parser = argparse.ArgumentParser(description="Run the Baseline Logistic Regression Classification Pipeline with ABC Features.")
     parser.add_argument('--data_path', type=str, default='df_with_all_features.csv',
                         help="Path to the input CSV file containing features and labels.")
-    parser.add_argument('--output_dir', type=str, default='./baseline_results',
+    # MODIFICA QUI: Cambia il default di output_dir a './results'
+    parser.add_argument('--output_dir', type=str, default='./results',
                         help="Directory to save all output files (results CSV, plots, model).")
-    parser.add_argument('--save_model_path', type=str, default='./baseline_results/baseline_model.joblib',
+    # Potresti voler aggiornare anche i percorsi di default per il modello,
+    # in modo che siano coerenti con la nuova cartella di output.
+    parser.add_argument('--save_model_path', type=str, default='./results/baseline_model.joblib',
                         help="Path to save the trained baseline model and scaler.")
     parser.add_argument('--load_model_path', type=str, default=None,
                         help="Path to load a pre-trained baseline model and scaler, instead of training.")
@@ -146,7 +149,7 @@ def main_baseline():
     plt.title('Confusion Matrix - Baseline Model')
     plt.xlabel('Predicted')
     plt.ylabel('True')
-    plt.savefig(os.path.join(args.output_dir, 'confusion_matrix_baseline.png'))
+    # Salviamo l'immagine nella cartella specificata
     plt.show()
 
     # ROC Curve
@@ -161,7 +164,7 @@ def main_baseline():
     plt.title('ROC Curve - Baseline Model')
     plt.legend(loc='lower right')
     plt.grid(True)
-    plt.savefig(os.path.join(args.output_dir, 'roc_curve_baseline.png'))
+    # Salviamo l'immagine nella cartella specificata
     plt.show()
 
     # Optionally: save the prediction results to a CSV file
@@ -175,6 +178,7 @@ def main_baseline():
         columns_to_save.insert(0, 'filename')
     
     results_df = results_df[columns_to_save]
+    # Salviamo il CSV nella cartella specificata
     results_df.to_csv(os.path.join(args.output_dir, 'results_baseline_model.csv'), index=False)
     print(f"Detailed test results saved to: {os.path.join(args.output_dir, 'results_baseline_model.csv')}")
 

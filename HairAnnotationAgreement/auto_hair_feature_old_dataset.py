@@ -2,14 +2,22 @@ import pandas as pd
 import numpy as np
 import cv2
 import os
+import sys
+
+current_script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root_dir = os.path.abspath(os.path.join(current_script_dir, '..'))
+
+if project_root_dir not in sys.path:
+    sys.path.insert(0, project_root_dir)
+
 from util.hair_feature_extractor import analyze_hair_amount 
 
 def run_manual_dataset_hair_feature_extraction():
     print("--- Starting Automatic Hair Feature Extraction for Manual Annotation Dataset ---")
 
-    manual_annotations_csv_path = '/Users/samuel/Desktop/ITU/Project in Data Science/2025-FYP-Final/data/result.csv'
-    manual_images_base_path = '/Users/samuel/Desktop/ITU/Project in Data Science/2025-FYP-Final/pictures'
-    output_csv_path = './data/auto_hair_features_on_manual_dataset.csv'
+    manual_annotations_csv_path = 'HairAnnotationAgreement/manual_annotation.csv'
+    manual_images_base_path = 'pictures'
+    output_csv_path = 'HairAnnotationAgreement/auto_hair_features_on_manual_dataset.csv'
 
 
     extracted_hair_data = []
