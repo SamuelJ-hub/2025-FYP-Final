@@ -1,9 +1,16 @@
+# This script analyzes the agreement between manual hair annotations and
+# automatically extracted hair features for the preliminary dataset.
+# It loads manual ratings, loads automatic features, merges them,
+# and then calculates/visualizes agreement metrics like Cohen's Kappa
+# and a confusion matrix.
+
 import pandas as pd
 import numpy as np
 from sklearn.metrics import cohen_kappa_score, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Main function to analyze the agreement between manual and automatic hair level annotations
 def analyze_hair_agreement():
    
     print("--- Starting Hair Annotation Agreement Analysis ---")
@@ -14,9 +21,10 @@ def analyze_hair_agreement():
     manual_rating_column = ['Rating_1', 'Rating_2', 'Rating_3', 'Rating_4']
 
     try:
+        # Load both datasets
         manual_df = pd.read_csv(manual_annotations_path)
         auto_df_on_manual_subset = pd.read_csv(auto_features_on_manual_dataset_path)
-
+        # Check if any expected rating columns are missing
         missing_manual_cols = [col for col in manual_rating_column if col not in manual_df.columns]
         if missing_manual_cols:
             print(f"Error: Missing manual rating columns in {manual_annotations_path}: {missing_manual_cols}")
@@ -25,12 +33,12 @@ def analyze_hair_agreement():
 
         for col in manual_rating_column:
             manual_df[col] = pd.to_numeric(manual_df[col], errors='coerce')
-
+        # Average the manual ratings
         manual_df['manual_hair_level_avg'] = manual_df[manual_rating_column].mean(axis=1)
-
+        # Round the average to the nearest integer for comparison
         manual_df['manual_hair_level_rounded'] = manual_df['manual_hair_level_avg'].round().astype(int)
 
-        
+        # Merge manual and automatic data on File_ID
         comparison_df = pd.merge(
             manual_df[['File_ID', 'manual_hair_level_rounded']],
             auto_df_on_manual_subset[['File_ID', 'hair_level_auto']],
@@ -42,6 +50,7 @@ def analyze_hair_agreement():
             print("Error: Required columns ('manual_hair_level_rounded' or 'hair_level_auto') not found after merge.")
             return
         
+        # Drop any rows with missing values
         comparison_df.dropna(subset=['manual_hair_level_rounded', 'hair_level_auto'], inplace=True)
         
         comparison_df['manual_hair_level_rounded'] = comparison_df['manual_hair_level_rounded'].astype(int)
@@ -102,5 +111,6 @@ def analyze_hair_agreement():
         
     print("\n--- Hair Annotation Agreement Analysis Complete ---")
 
+# Run the function
 if __name__ == '__main__':
     analyze_hair_agreement()
